@@ -75,6 +75,7 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 - OpenAPI：`http://127.0.0.1:8000/docs`
 - 接口说明：[docs/API.md](docs/API.md)
 - 公网部署：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- 完整股票池：[docs/stock_universe.csv](docs/stock_universe.csv)
 
 ## 启动前端
 
@@ -100,6 +101,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ```text
 GET /api/v1/stocks/search?keyword=000001
+GET /api/v1/stocks/universe
 GET /api/v1/stocks/000001/quote
 GET /api/v1/stocks/000001/history
 GET /api/v1/stocks/000001/analysis

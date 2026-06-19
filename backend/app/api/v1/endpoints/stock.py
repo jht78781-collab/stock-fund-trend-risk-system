@@ -9,6 +9,7 @@ from app.schemas.stock import (
     StockAnalysisOut,
     StockQuoteOut,
     StockSearchItem,
+    StockUniverseItem,
 )
 from app.services.exceptions import DataSourceError, StockNotFoundError
 from app.services.market_service import MarketService
@@ -28,6 +29,16 @@ def search_stocks(
 ) -> list[dict]:
     try:
         return service.search_stocks(keyword=keyword, limit=limit)
+    except DataSourceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/universe", response_model=list[StockUniverseItem], summary="查询当前支持的 A 股股票池")
+def list_stock_universe(
+    service: MarketService = Depends(get_market_service),
+) -> list[dict]:
+    try:
+        return service.list_stock_universe()
     except DataSourceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -107,4 +118,3 @@ def list_predictions(
         raise HTTPException(status_code=503, detail=f"MySQL 查询失败：{exc}") from exc
     except StockNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-

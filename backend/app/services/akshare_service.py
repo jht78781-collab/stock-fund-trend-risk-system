@@ -31,24 +31,53 @@ class AKShareService:
 
     def search_stocks(self, keyword: str, limit: int = 20) -> list[dict[str, Any]]:
         normalized_keyword = keyword.strip().lower()
-        records = self._get_spot_records()
         results: list[dict[str, Any]] = []
 
-        for record in records:
-            symbol = str(record.get("代码", "")).zfill(6)
-            name = str(record.get("名称", ""))
+        for stock in self.get_stock_universe():
+            symbol = stock["symbol"]
+            name = stock.get("name") or ""
             if normalized_keyword in symbol.lower() or normalized_keyword in name.lower():
                 results.append(
                     {
                         "symbol": symbol,
                         "name": name,
-                        "price": self._to_float(record.get("最新价")),
-                        "change_percent": self._to_float(record.get("涨跌幅")),
+                        "market": stock.get("market"),
+                        "price": None,
+                        "change_percent": None,
                     }
                 )
             if len(results) >= limit:
                 break
         return results
+
+    def get_stock_universe(self) -> list[dict[str, Any]]:
+        cache_key = "stock:universe:a-share"
+        cached = cache.get_json(cache_key)
+        if cached is not None:
+            return cached
+
+        try:
+            import akshare as ak
+
+            frame = ak.stock_info_a_code_name()
+        except Exception as exc:
+            raise DataSourceError(f"AKShare 股票代码表获取失败：{exc}") from exc
+
+        records: list[dict[str, Any]] = []
+        for item in frame.where(pd.notna(frame), None).to_dict(orient="records"):
+            symbol = str(item.get("code", "")).zfill(6)
+            if not SYMBOL_PATTERN.fullmatch(symbol):
+                continue
+            records.append(
+                {
+                    "symbol": symbol,
+                    "name": self._to_text(item.get("name")),
+                    "market": self._infer_market(symbol),
+                }
+            )
+
+        cache.set_json(cache_key, records, 24 * 60 * 60)
+        return records
 
     def get_quote(self, symbol: str) -> dict[str, Any]:
         normalized_symbol = self.normalize_symbol(symbol)
@@ -538,6 +567,8 @@ class AKShareService:
     def _tencent_symbol(self, symbol: str) -> str:
         if symbol.startswith("6"):
             return f"sh{symbol}"
+        if symbol.startswith(("4", "8", "9")):
+            return f"bj{symbol}"
         return f"sz{symbol}"
 
     def _date_dash(self, value: str) -> str:

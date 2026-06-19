@@ -6,8 +6,15 @@ from pydantic import BaseModel, ConfigDict, Field
 class StockSearchItem(BaseModel):
     symbol: str
     name: str | None = None
+    market: str | None = None
     price: float | None = None
     change_percent: float | None = None
+
+
+class StockUniverseItem(BaseModel):
+    symbol: str
+    name: str | None = None
+    market: str | None = None
 
 
 class StockBasicInfoOut(BaseModel):

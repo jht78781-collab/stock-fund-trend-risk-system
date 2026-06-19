@@ -26,6 +26,9 @@ class MarketService:
     def search_stocks(self, keyword: str, limit: int = 20) -> list[dict[str, Any]]:
         return self.akshare.search_stocks(keyword=keyword, limit=limit)
 
+    def list_stock_universe(self) -> list[dict[str, Any]]:
+        return self.akshare.get_stock_universe()
+
     def get_realtime_quote(self, symbol: str) -> dict[str, Any]:
         normalized_symbol = self.akshare.normalize_symbol(symbol)
         return self.akshare.get_quote(normalized_symbol)
@@ -204,4 +207,3 @@ class MarketService:
             return round(float(value), digits)
         except (TypeError, ValueError):
             return None
-
