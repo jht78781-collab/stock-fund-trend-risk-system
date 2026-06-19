@@ -74,6 +74,7 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 - OpenAPI：`http://127.0.0.1:8000/docs`
 - 接口说明：[docs/API.md](docs/API.md)
+- 公网部署：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## 启动前端
 
@@ -84,6 +85,16 @@ npm run dev
 ```
 
 前端默认访问：`http://127.0.0.1:5173`
+
+## 公网部署
+
+仓库已包含生产 Docker 配置，适合部署到一台云服务器：
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+部署完成后，别人可以通过服务器公网 IP 或绑定域名访问前端页面。
 
 ## 常用接口
 
